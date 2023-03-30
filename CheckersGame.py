@@ -247,7 +247,7 @@ class Checkers(GameLogic):
                     return f"{players_object.get_name()} has won the game!"
 
     def print_rules(self):
-        """This class method prints out the rules of the game"""
+        """This class method prints out the rules of the game."""
         print("\n")
         print("GAME RULES")
         print("There are two players, 'Black' and 'White'. Each player has 12 pieces. Player 'Black' moves first.")
