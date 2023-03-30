@@ -1,11 +1,13 @@
 # Author: Kevin Braman
-# GitHub username: bramank
-# Date: 03/16/2023
+# GitHub username: kevinbraman92
+# Date: 03/29/2023
 # Description: This program defines two classes: "Checkers" and "Player". The Checkers class represents a game of
 #              checkers played by two people. The Checkers class creates and contains Player objects, who in turn
 #              contain data members that store player-specific information regarding the game. Each player has 12
 #              pieces which can be upgraded to "King" or "Triple King" status. If a player loses all their pieces,
-#              the game ends.
+#              the game ends. This program imports capture and movement logic from the "CheckerGameLogic" module.
+#              The program assumes the player knows the rules of the game and will not intentionally attempt to break
+#              them.
 
 from CheckerGameLogic import GameLogic
 
@@ -34,7 +36,7 @@ class InvalidPlayer(Exception):
     pass
 
 
-class Player():
+class Player:
     """Represents a player of the board game checkers."""
 
     def __init__(self, player_name, checker_color):
@@ -50,7 +52,6 @@ class Player():
         kings           = the count of active kings, initialized to 0
         triple_kings    = the count of active triple_kings, initialized to 0
         """
-        super().__init__()
         self._player_name = player_name
         self._checker_color = checker_color
         self._captured_pieces = 0
@@ -67,7 +68,7 @@ class Player():
 
     def get_captured_pieces_count(self):
         """Class method that returns the count of captured pieces."""
-        return f"{self._checker_color} captured pieces: {self._captured_pieces}"
+        return self._captured_pieces
 
     def get_king_count(self):
         """Class method that returns the count of active kings."""
@@ -109,16 +110,19 @@ class Checkers(GameLogic):
         """
         Constructor method that takes no parameters.
 
-        The following private data members are initialized:
+        This constructor inherits the following data members of the "GameLogic" class:
 
-        turn            = the string turn of the current player, defaulted to "Black"
-        capture_state   = if a piece can capture, this will be True, otherwise defaulted to False
-        game_won        = if any player captures 12 pieces, the game is won. Defaults to False
+        capture_state   = if a piece can capture, this will be boolean True, otherwise defaulted to boolean False
         players         = initialized as an empty dictionary, stores player objects using the create_player method
         board           = creates a list of lists that represents the board. The board can be printed out using the
                           print_board method. 12 squares on the top have the string "White", on the bottom 12 squares
                           have the string "Black". These are the pieces used by the player. The remaining spaces are
                           element positions containing None.
+
+        In addition, the following private data members are initialized:
+
+        turn            = the string turn of the current player, defaulted to "Black"
+        game_won        = if any player captures 12 pieces, the game is won. Defaults to boolean False
         """
         super().__init__()
         self._turn = "Black"
@@ -153,30 +157,28 @@ class Checkers(GameLogic):
         starting_square_location    = a tuple in (x,y) format, the square the player is moving from
         destination_square_location = a tuple in (x,y) format, the square the player is moving to
 
-        This method is the main method for traversing and capturing pieces on the board, as well as determining if the
-        game is won. It is split into multiple sections. First is a check if the game is won. If any player captures
-        12 pieces, the game is won and the class game_winner is called.
+        This method calls upon the various methods of the parent class 'GameLogic' in its execution. The method's
+        execution is as follows:
 
-        Next are the exception checks. If the tuples in either starting_square_location or destination_square_location
-        are outside the board, an InvalidSquare Exception is raised. If a player attempts to move outside their turn,
-        an OutOfTurn Exception is raised. If a player attempts to select a piece not of their side's color, an
-        InvalidSquare Exception is raised. If a player_name is used that is not within the players data member, an
-        InvalidPlayer Exception is raised.
+        1. Check exception cases
+        2. Check if the game is won
+        3. Call the method 'make_move' from parent class 'GameLogic' to move the piece
+        4. Call the method 'upgrade_piece' from parent class 'GameLogic' to upgrade a piece if possible
+        5. Call the method 'can_capture' from the parent class 'GameLogic' check if a capturing piece can capture again
+        6. Change turn if 'can_capture' is false, otherwise pass
+        7. Return the user's captured pieces.
 
-        Next the class method can_capture is called to determine if a piece can capture. According to the rules of the
-        game, if a piece can capture it must capture. If that method returns False, only basic movement is allowed,
-        otherwise capture movement is allowed.
 
-        Once movement is completed, a check is made to determine if any pieces can be upgraded. If a basic piece can
-        reach the other end of the board, it is upgraded to a king version of itself, if the king reaches the starting
-        side, it is upgraded to a triple king.
-
-        Following this, another check is made to determine if the piece moved can capture again. If so, the turn is
-        not changed allowing the current player to capture again. Otherwise, the turn data member is changed and the
-        other player is allowed to move.
+        If the tuples in either starting_square_location or destination_square_location are outside the board,
+        an InvalidSquare Exception is raised. If a player attempts to move outside their turn, an OutOfTurn Exception
+        is raised. If a player attempts to select a piece not of their side's color, an InvalidSquare Exception is
+        raised. If a player_name is used that is not within the players data member, an InvalidPlayer Exception is
+        raised.
 
         This method returns the count of captured pieces for the player making the move.
         """
+
+        # Define local variables
         starting_row, starting_column = starting_square_location[0], starting_square_location[1]
         destination_row, destination_column = destination_square_location[0], destination_square_location[1]
         start = self.get_checker_details(starting_square_location)
@@ -242,56 +244,30 @@ class Checkers(GameLogic):
             for players in self._players:
                 players_object = self._players[players]
                 if players_object.get_checker_color() == self._turn:
-                    return players_object.get_name()
+                    return f"{players_object.get_name()} has won the game!"
+
+    def print_rules(self):
+        """This class method prints out the rules of the game"""
+        print("\n")
+        print("GAME RULES")
+        print("There are two players, 'Black' and 'White'. Each player has 12 pieces. Player 'Black' moves first.")
+        print("All pieces start as pawns. Pawns may only move & capture diagonally forwards.")
+        print("If a piece makes it to the opposite end, it will upgrade to a king.")
+        print("If it makes it back again to its side's board end, it will upgrade to a triple king.")
+        print("King pieces can move and capture diagonally in any direction. They do not have to be adjacent to "
+              "capture.")
+        print("Triple kings can do everything a king can, as well as jump friendly pieces to move faster and double "
+              "capture.")
+        print("If a piece can capture, it must capture. If a piece captures and can capture again, it must capture.")
+        print("The game ends when a player has captured all opposing pieces.")
+        print("\n")
 
 
-game = Checkers()
+def main():
+    game = Checkers()
+    game.print_rules()
+    game.print_board()
 
-Player1 = game.create_player("Adam", "White")
 
-Player2 = game.create_player("Lucy", "Black")
-
-game.play_game("Lucy", (5, 6), (4, 7))
-game.play_game("Adam", (2, 1), (3, 0))
-game.play_game("Lucy", (4, 7), (3, 6))
-game.play_game("Adam", (2, 7), (4, 5))
-game.play_game("Lucy", (6, 7), (5, 6))
-game.play_game("Adam", (1, 6), (2, 7))
-game.play_game("Lucy", (5, 2), (4, 1))
-game.play_game("Adam", (3, 0), (5, 2))
-game.play_game("Lucy", (6, 3), (4, 1))
-game.play_game("Adam", (4, 5), (6, 7))
-game.play_game("Lucy", (6, 5), (5, 6))
-game.play_game("Adam", (2, 7), (3, 6))
-game.play_game("Lucy", (7, 6), (6, 5))
-game.play_game("Adam", (6, 7), (7, 6))
-game.play_game("Lucy", (5, 4), (4, 3))
-game.play_game("Adam", (7, 6), (5, 4))
-game.play_game("Adam", (5, 4), (3, 2))
-game.play_game("Lucy", (6, 1), (5, 2))
-game.play_game("Adam", (3, 2), (2, 1))
-game.play_game("Lucy", (7, 0), (6, 1))
-game.play_game("Adam", (2, 3), (3, 4))
-game.play_game("Lucy", (7, 4), (6, 3))
-game.play_game("Adam", (1, 2), (2, 3))
-game.play_game("Lucy", (6, 3), (5, 4))
-game.play_game("Adam", (0, 1), (1, 2))
-game.play_game("Lucy", (5, 6), (4, 7))
-game.play_game("Adam", (1, 2), (2, 3))
-game.play_game("Lucy", (7, 2), (6, 3))
-game.play_game("Adam", (2, 1), (1, 2))
-game.play_game("Lucy", (4, 1), (3, 0))
-game.play_game("Adam", (1, 2), (0, 1))
-game.play_game("Lucy", (5, 0), (4, 1))
-game.play_game("Adam", (0, 1), (1, 2))
-game.play_game("Lucy", (5, 2), (4, 3))
-game.play_game("Adam", (1, 2), (2, 1))
-game.play_game("Lucy", (6, 1), (5, 0))
-game.play_game("Adam", (2, 1), (6,5))
-game.play_game("Lucy", (6, 3), (5, 4))
-game.play_game("Adam", (6, 5), (4,3))
-game.print_board()
-
-print(Player1.get_captured_pieces_count())
-print(Player2.get_captured_pieces_count())
-print(game._capture_state)
+if __name__ == "__main__":
+    main()
