@@ -1,3 +1,8 @@
+# Project Overview
+
+This project was originally created for CS162 "Intro to Computer Science II" class. The goal was to create a functional game of checkers played through the use of class methods. The most difficult part for me in creating this program was undoubtably move validation. Since I was not using Pygame and any game template, I had to manually validate all possible moves and capture situations for all piece types.
+
+The original program requirements are below. 
 
 # portfolio-project
 
